@@ -1,0 +1,29 @@
+version: '3.8'
+
+networks:
+  ghost_net:
+    driver: bridge
+
+services:
+  # 1. THE DNS ENGINE (Python)
+  ghost_engine:
+    build: .
+    container_name: ghost_engine
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - ghost_net
+
+  # 2. THE CLOUDFLARE TUNNEL (Connector)
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: ghost_tunnel
+    restart: unless-stopped
+    networks:
+      - ghost_net
+    env_file:
+      - .env
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
